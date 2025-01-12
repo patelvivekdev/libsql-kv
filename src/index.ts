@@ -5,6 +5,7 @@ export interface KVStoreOptions {
   authToken?: string;
   tableName?: string;
   debug?: boolean;
+  allowStale?: boolean;
 }
 
 export class KVStore {
@@ -12,11 +13,13 @@ export class KVStore {
   private tableName: string;
   private initialized: boolean = false;
   private debug: boolean;
+  private allowStale?: boolean;
 
   constructor(client: Client, options: KVStoreOptions = {}) {
     this.client = client;
     this.tableName = options.tableName || 'kv_store';
     this.debug = options.debug || false;
+    this.allowStale = options.allowStale || false;
   }
 
   private log(...args: any[]): void {
@@ -78,7 +81,7 @@ export class KVStore {
     }
   }
 
-  async get<T = any>(key: string): Promise<T | null> {
+  async get<T = any>(key: string, allowStale?: boolean): Promise<T | null> {
     try {
       const sql = `SELECT value, expires_at FROM ${this.tableName} WHERE key = ?`;
       const args = [key];
@@ -93,8 +96,10 @@ export class KVStore {
 
       if (!row) return null;
 
-      if (row.expires_at && row.expires_at <= Date.now()) {
-        await this.delete(key);
+      const isStale = row.expires_at && row.expires_at <= Date.now();
+      const shouldAllowStale = allowStale ?? this.allowStale ?? false;
+
+      if (isStale && !shouldAllowStale) {
         return null;
       }
 

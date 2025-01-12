@@ -1,7 +1,7 @@
 {
   "name": "libsql-kv",
   "description": "A simple key-value store for libsql | Turso",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "author": "Vivek Patel <me@patelvivek.dev>",
   "license": "MIT",

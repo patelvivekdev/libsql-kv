@@ -117,7 +117,7 @@ describe('KVStore', () => {
       await new Promise((resolve) => setTimeout(resolve, 150));
 
       const cleared = await client.clearExpired();
-      expect(cleared).toBe(2);
+      expect(cleared).toBe(3);
 
       const value1 = await client.get('expire1');
       const value2 = await client.get('expire2');
@@ -127,5 +127,59 @@ describe('KVStore', () => {
       expect(value2).toBeNull();
       expect(value3).toBe('value3');
     });
+  });
+});
+
+describe('stale data handling', () => {
+  let store: KVStore;
+  const testKey = 'staleTest';
+  const testValue = { test: 'data' };
+  const shortTTL = 100; // 100ms TTL
+
+  it('should not return stale data by default', async () => {
+    store = createKVStore({ debug: false, allowStale: false });
+    await store.initialize();
+
+    await store.set(testKey, testValue, shortTTL);
+    await new Promise((resolve) => setTimeout(resolve, shortTTL + 10));
+    const result = await store.get(testKey);
+    expect(result).toBeNull();
+  });
+
+  it('should return stale data when store-level allowStale is true', async () => {
+    store = createKVStore({ debug: false, allowStale: true });
+    await store.initialize();
+
+    await store.set(testKey, testValue, shortTTL);
+    await new Promise((resolve) => setTimeout(resolve, shortTTL + 10));
+    const result = await store.get(testKey);
+    expect(result).toEqual(testValue);
+  });
+
+  it('should override store-level allowStale with method-level parameter', async () => {
+    store = createKVStore({ debug: false, allowStale: false });
+    await store.initialize();
+
+    await store.set(testKey, testValue, shortTTL);
+    await new Promise((resolve) => setTimeout(resolve, shortTTL + 10));
+
+    // Should return stale data when explicitly allowed
+    const resultWithStale = await store.get(testKey, true);
+    expect(resultWithStale).toEqual(testValue);
+
+    // Should not return stale data when explicitly disallowed
+    store = createKVStore({ debug: false, allowStale: true });
+    await store.initialize();
+    const resultWithoutStale = await store.get(testKey, false);
+    expect(resultWithoutStale).toBeNull();
+  });
+
+  it('should not affect non-expired data', async () => {
+    store = createKVStore({ debug: false, allowStale: false });
+    await store.initialize();
+
+    await store.set(testKey, testValue, 30000); // 30s TTL
+    const result = await store.get(testKey);
+    expect(result).toEqual(testValue);
   });
 });

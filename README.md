@@ -55,6 +55,7 @@ const store = createKVStore({
   url: 'libsql://your-database.turso.io',
   authToken: 'my-secret-token',
   debug: true,
+  allowStale: false, // Control whether to allow reading expired data
 });
 ```
 
@@ -68,9 +69,23 @@ Creates the underlying table if it doesn’t exist. Must be called before using 
 
 Stores a value with an optional time-to-live in milliseconds. Overwrites existing data under the same key.
 
-### `get(key)`
+### `get(key, allowStale?)`
 
-Retrieves the stored value. Automatically deletes and returns null if TTL has expired.
+Retrieves the stored value. If the data has expired:
+
+- Returns null by default
+- Returns the expired data if `allowStale` is true
+- The `allowStale` parameter overrides the store-level setting
+
+Example:
+
+```typescript
+// Get with default stale behavior
+const data1 = await store.get('myKey');
+
+// Override to allow stale data for this specific call
+const data2 = await store.get('myKey', true);
+```
 
 ### `delete(key)`
 
