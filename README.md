@@ -6,7 +6,6 @@ A flexible key-value store built on top of libSQL, providing an easy way to stor
 <a href="https://www.npmjs.com/packagelibsql-kv"><img src="https://img.shields.io/npm/v/libsql-kv"/><a>
 <a href="https://www.npmjs.com/package/libsql-kv"><img src="https://img.shields.io/npm/dm/libsql-kv"/><a>
 <a href="https://github.com/patelvivekdev/libsql-kv/actions/workflows/CI.yml"><img src="https://github.com/patelvivekdev/libsql-kv/actions/workflows/CI.yml/badge.svg"/><a>
-<a href="https://github.com/samchungy/zod-openapi/actions/workflows/release.yml"><img src="https://github.com/samchungy/zod-openapi/actions/workflows/release.yml/badge.svg"/><a>
 </div>
 <br>
 
